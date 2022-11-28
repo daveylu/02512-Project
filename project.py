@@ -83,6 +83,7 @@ def main(days):
         dw8 = random.normal(0, 1)
         dw9 = random.normal(0, 1)
         dw10 = random.normal(0, 1)
+
         change_S= dS(b1, b2, b3, i1, i2, i3, S, k, dt, dw1, dw2, dw3)
         change_E = dE(b1, b2, b3, i1, i2, i3, a, E, S, k, dt, dw1, dw2, dw3)
         change_R = dR(y1, y2, y3, i1, i2, i3, k, dt, dw5, dw7, dw9)
@@ -117,12 +118,18 @@ def main(days):
         else:
             i2 += change_i2
 
-        i3 += change_i3
-        if(i3 < 0): i3 = 0
+        if(i3 + change_i3 < 0):
+            R += i3 * (y3 / (y3 + u))
+            D += i3 * (u / (y3 + u))
+            change_D = 0
+            i3 = 0
+        else:
+            i3 += change_i3
+
+        #TODO: create better way to deal with change_R when i1, i2, i3 end up at 0
         R += change_R
-        if(R < 0): R = 0
+
         D += change_D
-        if(D < 0): D = 0
 
         vals_S.append(S)
         vals_E.append(E)
