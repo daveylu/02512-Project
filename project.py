@@ -1,5 +1,4 @@
 import math
-import sys
 from numpy import random
 from matplotlib import pyplot as plt
 
@@ -91,20 +90,40 @@ def main(days):
         change_i2 = dI2(p1, y2, p2, dt, i1, i2, k, dw6, dw7, dw8)
         change_i3 = dI3(y2, p2, i2, y3, u, dt, i3, k, dw8, dw9, dw10)
         change_D = dD(i3, u, k, dt, dw10)
-        S += change_S
-        if(S < 0): S = 0
-        E += change_E
-        if(E < 0): E = 0
-        R += change_R
-        if(R < 0): R = 0
-        i1 += change_i1
-        if(i1 < 0): i1 = 0
-        i2 += change_i2
-        if(i2 < 0): i2 = 0
+
+        if(S + change_S < 0):
+            E += S
+            S = 0
+        else:
+            S += change_S
+
+        if(E + change_E < 0):
+            i1 += E
+            E = 0
+        else:
+            E += change_E
+
+        if(i1 + change_i1 < 0):
+            i2 += i1 * (p1 / (y1 + p1))
+            R += i1 * (y1 / (y1 + p1))
+            i1 = 0
+        else:
+            i1 += change_i1
+
+        if(i2 + change_i2 < 0):
+            i3 += i2 * (p2 / (y2 + p2))
+            R += i2 * (y2 / (y2 + p2))
+            i2 = 0
+        else:
+            i2 += change_i2
+
         i3 += change_i3
         if(i3 < 0): i3 = 0
+        R += change_R
+        if(R < 0): R = 0
         D += change_D
         if(D < 0): D = 0
+
         vals_S.append(S)
         vals_E.append(E)
         vals_i1.append(i1)
