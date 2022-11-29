@@ -2,16 +2,16 @@ import math
 from numpy import random
 from matplotlib import pyplot as plt
 
-def dS(b1, b2, b3, i1, i2, i3, S, k, dt, dw1, dw2, dw3):
+def dS(b1, b2, b3, i1, i2, i3, S, k, dt, dw1, dw2, dw3,N):
     
-    part1 = -(b1*i1 + b2*i2 + b3*i3)*S*dt
+    part1 = -(b1*i1 + b2*i2 + b3*i3)*S*dt/(N)
     part2 = -k*(dw1*math.sqrt(b1*i1*S) + dw2*math.sqrt(b2*i2*S) + dw3*math.sqrt(b3*i3*S))
     return part1 + part2
 
-def dE(b1, b2, b3, i1, i2, i3, a, E, S, k, dt, dw1, dw2, dw3, dw4, S_floored):
+def dE(b1, b2, b3, i1, i2, i3, a, E, S, k, dt, dw1, dw2, dw3, dw4, S_floored,N):
     if(S_floored == True): S_part = S
     else:
-        S_part = (b1*i1 + b2*i2 + b3*i3)*S*dt + k*(dw1*math.sqrt(b1*i1*S) + dw2*math.sqrt(b2*i2*S) + dw3*math.sqrt(b3*i3*S))
+        S_part = (b1*i1 + b2*i2 + b3*i3)*S*dt/N + k*(dw1*math.sqrt(b1*i1*S) + dw2*math.sqrt(b2*i2*S) + dw3*math.sqrt(b3*i3*S))
     E_part = -a*E*dt - (dw4*math.sqrt(a*E))
     return S_part + E_part
 
@@ -59,11 +59,11 @@ def dD(i3, y3, u, k, dt, dw10, i3_floored):
     
 def main(days):
     # Initialize conditions and parametres.
-    N = 1000
+    N = 1000000
     i1 = 0
     i2 = 0
     i3 = 0
-    S = N
+    S = N-1
     E = 1
     D = 0
     R = 0
@@ -90,6 +90,7 @@ def main(days):
     vals_i3 = [i3]
     vals_D = [D]
     vals_R = [R]
+    vals_total = [N]
     t = [0]
     runs = int(days / dt)
     for i in range(1, runs + 1):
@@ -121,15 +122,14 @@ def main(days):
         init_i2 = i2
         init_i3 = i3
         
-        change_S= dS(b1, b2, b3, init_i1, init_i2, init_i3, init_S, k, dt, dw1, dw2, dw3)
+        change_S= dS(b1, b2, b3, init_i1, init_i2, init_i3, init_S, k, dt, dw1, dw2, dw3, N)
         if(S + change_S < 0):
-            E += S
             S = 0
             S_floored = True
         else:
             S += change_S
 
-        change_E = dE(b1, b2, b3, init_i1, init_i2, init_i3, a, init_E, init_S, k, dt, dw1, dw2, dw3, dw4, S_floored)
+        change_E = dE(b1, b2, b3, init_i1, init_i2, init_i3, a, init_E, init_S, k, dt, dw1, dw2, dw3, dw4, S_floored, N)
         if(init_E + change_E < 0): #amount of E at start of step drops to zero
             i1 += init_E #move it all to i1 since that's how the model works
             E -= init_E #remove initial amount from current E.
@@ -173,7 +173,10 @@ def main(days):
         R += change_R
 
         change_D = dD(i3, y3, u, k, dt, dw10, i3_floored)
-        D += change_D
+        if change_D >= 0:
+            D += change_D
+        else:
+            i3 -= change_D
 
         vals_S.append(S)
         vals_E.append(E)
@@ -182,6 +185,7 @@ def main(days):
         vals_i3.append(i3)
         vals_D.append(D)
         vals_R.append(R)
+        vals_total.append(S + E + i1 + i2 + i3 + D + R)
         t.append(i)
 
     plt.plot(t, vals_S, label = "Susceptible")
@@ -191,11 +195,12 @@ def main(days):
     plt.plot(t, vals_i3, label = "Critical Infection")
     plt.plot(t, vals_D, label = "Dead")
     plt.plot(t, vals_R, label = "Recovered")
+    plt.plot(t, vals_total, label = "total")
     plt.xlabel("Days")
     plt.ylabel("Population")
     plt.title(f"Plot of COVID spread: {N} total population")
     plt.legend()
     plt.show()
-    
+    #print(vals_total)
 
-main(300)
+main(500)
