@@ -136,6 +136,7 @@ def main(days):
             E_floored = True
         else:
             E += change_E
+        assert(E >= 0)
 
         change_i1 = dI1(a, init_E, y1, p1, dt, init_i1, k, dw4, dw5, dw6, E_floored)
         if(init_i1 + change_i1 < 0):
@@ -145,6 +146,7 @@ def main(days):
             i1_floored = True
         else:
             i1 += change_i1
+        assert(i1 >= 0)
 
         change_i2 = dI2(p1, y1, y2, p2, dt, init_i1, init_i2, k, dw6, dw7, dw8, i1_floored)
         if(init_i2 + change_i2 < 0):
@@ -154,6 +156,7 @@ def main(days):
             i2_floored = True
         else:
             i2 += change_i2
+        assert(i2 >= 0)
 
         change_i3 = dI3(y2, p2, init_i2, y3, u, dt, init_i3, k, dw8, dw9, dw10, i2_floored)
         if(init_i3 + change_i3 < 0):
@@ -163,6 +166,7 @@ def main(days):
             i3_floored = True
         else:
             i3 += change_i3
+        assert(i3 >= 0)
 
         #TODO: create better way to deal with change_R when i1, i2, or i3 end up at 0
         change_R = dR(y1, y2, y3, p1, p2, u, i1, i2, i3, k, dt, dw5, dw7, dw9, i1_floored, i2_floored, i3_floored)
