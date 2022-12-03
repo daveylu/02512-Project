@@ -48,8 +48,6 @@ def dR(y1, y2, y3, p1, p2, u, i1, i2, i3, k, dt, dw5, dw7, dw9, i1_floored, i2_f
 
     if(i3_floored == True): i3_part = i3 * (y3 / (y3 + u))
     else: i3_part = y3*i3*dt + k*dw9*math.sqrt(y3*i3)
-    # part1 = (y1*i1 + y2*i2 + y3*i3)*dt
-    # part2 = k*(dw5*math.sqrt(y1*i1) + dw7*math.sqrt(y2*i2) + dw9*math.sqrt(y3*i3))
     return i1_part + i2_part + i3_part
     
 def dD(i3, y3, u, k, dt, dw10, i3_floored):
@@ -79,7 +77,7 @@ def main(days):
     y3 = 0.075
     u = 0.050
     dt = 1
-    k = 0
+    k = 0.1
 
     # The parametres can be changed based upon the severity of PHSM (Public Health and Safety Measures)
 
@@ -90,7 +88,7 @@ def main(days):
     vals_i3 = [i3]
     vals_D = [D]
     vals_R = [R]
-    vals_total = [N]
+    # vals_total = [N]
     t = [0]
     runs = int(days / dt)
     for i in range(1, runs + 1):
@@ -185,9 +183,10 @@ def main(days):
         vals_i3.append(i3)
         vals_D.append(D)
         vals_R.append(R)
-        vals_total.append(S + E + i1 + i2 + i3 + D + R)
+        # vals_total.append(S + E + i1 + i2 + i3 + D + R)
         t.append(i)
 
+    print(vals_D[-1]/N)
     plt.plot(t, vals_S, label = "Susceptible")
     plt.plot(t, vals_E, label = "Exposed")
     plt.plot(t, vals_i1, label = "Mild Infection")
@@ -195,12 +194,12 @@ def main(days):
     plt.plot(t, vals_i3, label = "Critical Infection")
     plt.plot(t, vals_D, label = "Dead")
     plt.plot(t, vals_R, label = "Recovered")
-    plt.plot(t, vals_total, label = "total")
+    # plt.plot(t, vals_total, label = "total")
     plt.xlabel("Days")
     plt.ylabel("Population")
-    plt.title(f"Plot of COVID spread: {N} total population")
+    plt.title(f"Plot of COVID Spread")
     plt.legend()
     plt.show()
-    #print(vals_total)
+    
 
-main(500)
+main(250)
