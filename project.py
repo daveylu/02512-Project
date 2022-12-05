@@ -67,7 +67,7 @@ def main(days):
     R = 0
     # fixed paramter set (for now), maybe allow adjustments later
     a = 0.2
-    b1 = 0.5
+    b1 = 0.3
     b2 = 0.1
     b3 = 0.1
     p1 = 0.033
@@ -77,7 +77,7 @@ def main(days):
     y3 = 0.075
     u = 0.050
     dt = 1
-    k = 0.1
+    k = 0
 
     # The parametres can be changed based upon the severity of PHSM (Public Health and Safety Measures)
 
@@ -166,7 +166,6 @@ def main(days):
             i3 += change_i3
         assert(i3 >= 0)
 
-        #TODO: create better way to deal with change_R when i1, i2, or i3 end up at 0
         change_R = dR(y1, y2, y3, p1, p2, u, i1, i2, i3, k, dt, dw5, dw7, dw9, i1_floored, i2_floored, i3_floored)
         R += change_R
 
@@ -202,4 +201,4 @@ def main(days):
     plt.show()
     
 
-main(250)
+main(500)
