@@ -67,7 +67,7 @@ def main(days):
     R = 0
     # fixed paramter set (for now), maybe allow adjustments later
     a = 0.2
-    b1 = 0.3
+    b1 = 0.5
     b2 = 0.1
     b3 = 0.1
     p1 = 0.033
@@ -78,6 +78,7 @@ def main(days):
     u = 0.050
     dt = 1
     k = 0
+    lockdown_initiated = False
 
     # The parametres can be changed based upon the severity of PHSM (Public Health and Safety Measures)
 
@@ -175,6 +176,16 @@ def main(days):
         else:
             i3 -= change_D
 
+        
+        if((i1 + i2 + i3) / N > 0.01):
+            b1 = 0.375
+            lockdown_initiated = True
+            lockdown_start = i
+        
+        if(lockdown_initiated == True):
+            if(i - lockdown_start >= 60 / dt):
+                b1 = 0.5
+
         vals_S.append(S)
         vals_E.append(E)
         vals_i1.append(i1)
@@ -185,7 +196,7 @@ def main(days):
         # vals_total.append(S + E + i1 + i2 + i3 + D + R)
         t.append(i)
 
-    print(vals_D[-1]/N)
+    print(vals_D[-1]/N * 100)
     plt.plot(t, vals_S, label = "Susceptible")
     plt.plot(t, vals_E, label = "Exposed")
     plt.plot(t, vals_i1, label = "Mild Infection")
