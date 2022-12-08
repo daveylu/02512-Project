@@ -125,7 +125,7 @@ def main(days):
         if(S + change_S < 0):
             S = 0
             S_floored = True
-        else:
+        elif change_S < 0:
             S += change_S
 
         change_E = dE(b1, b2, b3, init_i1, init_i2, init_i3, a, init_E, init_S, k, dt, dw1, dw2, dw3, dw4, S_floored, N)
