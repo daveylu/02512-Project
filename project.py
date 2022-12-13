@@ -55,7 +55,7 @@ def dD(i3, y3, u, k, dt, dw10, i3_floored):
         return i3 * (u / (y3 + u))
     return (u*i3*dt) + k*dw10*math.sqrt(u*i3)
     
-def main(days):
+def model(days, modifiers):
     # Initialize conditions and parametres.
     N = 1000000
     i1 = 0
@@ -65,7 +65,16 @@ def main(days):
     E = 1
     D = 0
     R = 0
-    # fixed paramter set (for now), maybe allow adjustments later
+    masking_enabled = modifiers[0]
+    lockdown_enabled = modifiers[1]
+    stochasticity_enabled = modifiers[2]
+
+    if(stochasticity_enabled == True):
+        k = 0.1
+    else:
+        k = 0
+    # fixed parameter set (for now), maybe allow adjustments later
+
     a = 0.2
     b1 = 0.5
     b2 = 0.1
@@ -77,8 +86,10 @@ def main(days):
     y3 = 0.075
     u = 0.050
     dt = 1
-    k = 0
-    lockdown_initiated = False
+
+    
+    if(lockdown_enabled == True):
+        lockdown_initiated = False
 
     # The parametres can be changed based upon the severity of PHSM (Public Health and Safety Measures)
 
@@ -125,7 +136,7 @@ def main(days):
         if(S + change_S < 0):
             S = 0
             S_floored = True
-        else:
+        elif(change_S < 0):
             S += change_S
 
         change_E = dE(b1, b2, b3, init_i1, init_i2, init_i3, a, init_E, init_S, k, dt, dw1, dw2, dw3, dw4, S_floored, N)
@@ -176,15 +187,19 @@ def main(days):
         else:
             i3 -= change_D
 
-        
-        if((i1 + i2 + i3) / N > 0.01):
-            b1 = 0.375
-            lockdown_initiated = True
-            lockdown_start = i
-        
-        if(lockdown_initiated == True):
-            if(i - lockdown_start >= 60 / dt):
-                b1 = 0.5
+        if(masking_enabled == True):
+            if((i1 + i2 + i3) / N > 0.01):
+                b1 = 0.25
+
+        if(lockdown_enabled == True):
+            if((i1 + i2 + i3) / N > 0.01):
+                b1 = 0.375
+                lockdown_initiated = True
+                lockdown_start = i
+            
+            if(lockdown_initiated == True):
+                if(i - lockdown_start >= 60 / dt):
+                    b1 = 0.5
 
         vals_S.append(S)
         vals_E.append(E)
@@ -195,6 +210,8 @@ def main(days):
         vals_R.append(R)
         # vals_total.append(S + E + i1 + i2 + i3 + D + R)
         t.append(i)
+
+    return [t, vals_S, vals_E, vals_i1, vals_i2, vals_i3, vals_D, vals_R]
 
     print(vals_D[-1]/N * 100)
     plt.plot(t, vals_S, label = "Susceptible")
@@ -210,6 +227,54 @@ def main(days):
     plt.title(f"Plot of COVID Spread")
     plt.legend()
     plt.show()
+    return
     
 
-main(500)
+def main():
+    deterministic_vals = model(500, [True, False, False])
+    stochastic_vals = model(500, [True, False, True])
+    
+    deter_t = deterministic_vals[0]
+    deter_S = deterministic_vals[1]
+    deter_E = deterministic_vals[2]
+    deter_i1 = deterministic_vals[3]
+    deter_i2 = deterministic_vals[4]
+    deter_i3 = deterministic_vals[5]
+    deter_D = deterministic_vals[6]
+    deter_R = deterministic_vals[7]
+
+    stoch_t = stochastic_vals[0]
+    stoch_S = stochastic_vals[1]
+    stoch_E = stochastic_vals[2]
+    stoch_i1 = stochastic_vals[3]
+    stoch_i2 = stochastic_vals[4]
+    stoch_i3 = stochastic_vals[5]
+    stoch_D = stochastic_vals[6]
+    stoch_R = stochastic_vals[7]
+
+    print(f"Percent of Deaths (Deterministic): {deter_D[-1]/1000000 * 100}%")
+    print(f"Percent of Deaths (Stochastic): {stoch_D[-1]/1000000 * 100}%")
+    plt.plot(deter_t, deter_S, label = "Susceptible (Deterministic)")
+    plt.plot(deter_t, deter_E, label = "Exposed (Deterministic)")
+    plt.plot(deter_t, deter_i1, label = "Mild Infection (Deterministic)")
+    plt.plot(deter_t, deter_i2, label = "Severe Infection (Deterministic)")
+    plt.plot(deter_t, deter_i3, label = "Critical Infection (Deterministic)")
+    plt.plot(deter_t, deter_D, label = "Dead (Deterministic)")
+    plt.plot(deter_t, deter_R, label = "Recovered (Deterministic)")
+    plt.plot(stoch_t, stoch_S, label = "Susceptible (Stochastic)")
+    plt.plot(stoch_t, stoch_E, label = "Exposed (Stochastic)")
+    plt.plot(stoch_t, stoch_i1, label = "Mild Infection (Stochastic)")
+    plt.plot(stoch_t, stoch_i2, label = "Severe Infection (Stochastic)")
+    plt.plot(stoch_t, stoch_i3, label = "Critical Infection (Stochastic)")
+    plt.plot(stoch_t, stoch_D, label = "Dead (Stochastic)")
+    plt.plot(stoch_t, stoch_R, label = "Recovered (Stochastic)")
+    plt.xlabel("Days")
+    plt.ylabel("Population")
+    plt.title(f"Plot of COVID Spread")
+    plt.legend()
+    plt.show()
+
+    return
+
+main()
+
